@@ -19,19 +19,21 @@ securities_pct = securities_pct[sma_lookback:].copy()
 # default is position of 0, this is when sma_asset < moving average
 securities_df['position'] = 0
 
-# when sma_asset > moving average we are long
-securities_df.loc[securities_df[sma_asset] > securities_df['sma'], 'position'] = 1
+# when sma_asset > moving average we are long - adding shift to remove lookahead bias
+# take a look at everything again this seems strange
+securities_df.loc[securities_df[sma_asset].shift(1) > securities_df['sma'], 'position'] = 1
 
+# the percentage returns that we'll multiply the position by to get the daily returns for the position
 returns = securities_pct
+
 
 returns[sma_asset] *= securities_df['position']
 
 
 test = np.cumprod(1 + returns['SPY'])
-
-# just by this we can tell that the strategy has lookahead bias - generated from line 23
-# need to add a 1 day delay to making change to fix this
 test.plot()
 plt.show()
+
+
 
 
