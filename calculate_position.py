@@ -26,13 +26,9 @@ securities_df.loc[securities_df[sma_asset].shift(1) > securities_df['sma'], 'pos
 # the percentage returns that we'll multiply the position by to get the daily returns for the position
 returns = securities_pct
 
-
+# multiplying the returns of the asset we're testing the sma on, by the position value
+# if long position = 1*return, if not long = 0*return
 returns[sma_asset] *= securities_df['position']
-
-
-test = np.cumprod(1 + returns['SPY'])
-test.plot()
-plt.show()
 
 
 
