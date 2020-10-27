@@ -5,6 +5,7 @@ import norgatedata
 from datetime import datetime
 
 from load_data import securities_pct, securities_df
+from perf_funcs import *
 
 sma_asset = 'SPY'
 sma_lookback = 200
@@ -29,6 +30,52 @@ returns = securities_pct
 # multiplying the returns of the asset we're testing the sma on, by the position value
 # if long position = 1*return, if not long = 0*return
 returns[sma_asset] *= securities_df['position']
+
+if __name__ == '__main__':
+
+    invested = 1000
+
+    portfolio_value = invested * np.cumprod(1 + returns[sma_asset])
+
+    # creating the index to compare our strategy to
+    index = create_index(start=portfolio_value.index[0],
+                         end=portfolio_value.index[-1],
+                         index_ticker='SPY')
+
+    # same initial investment as our backtested strategy
+    index = index * invested
+
+    # CAGR
+    strat_cagr = cagr(portfolio_value)
+    strat_cagr = '{:.2%}'.format(strat_cagr)
+
+    # drawdowns
+    drawdowns = drawdowns(portfolio_value)
+    max_dd = min(drawdowns.fillna(0))
+    max_dd = '{:.2%}'.format(max_dd)
+
+    # volatility
+    vol = volatility(portfolio_value)
+    vol = '{:.2%}'.format(vol)
+
+    strat_start = portfolio_value.index[0].strftime('%Y-%m-%d')
+    strat_end = portfolio_value.index[-1].strftime('%Y-%m-%d')
+
+    # plotting the performance of our backtest with an index
+    perf_chart = backtest_perf_plot(equity_curve=portfolio_value,
+                                    rolling_dd=drawdowns,
+                                    comparison=True,
+                                    index=index)
+    plt.show()
+
+    print('The CAGR for SPY 200d MA from {} to {} was {} with an annualized volatility of {}'.format(strat_start,
+                                                                                                    strat_end,
+                                                                                                    strat_cagr,
+                                                                                                    vol))
+
+    print('The Max Drawdown for SPY 200d MA between {} and {} was {}'.format(strat_start,
+                                                                            strat_end,
+                                                                            max_dd))
 
 
 

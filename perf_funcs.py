@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta
 import pandas as pd
 from math import sqrt
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import norgatedata
+import numpy as np
 
 def drawdowns(strategy_series):
     """
@@ -77,10 +81,6 @@ def volatility(strategy_series):
 
     return vol
 
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import pandas as pd
-
 
 def backtest_perf_plot(equity_curve, rolling_dd, comparison=False, index=None):
     fig = plt.figure(figsize=(10, 7))
@@ -110,3 +110,24 @@ def backtest_perf_plot(equity_curve, rolling_dd, comparison=False, index=None):
     ax2.legend()
 
     return fig
+
+
+def create_index(start, end, index_ticker):
+    symbol = index_ticker
+
+    norgate_df = norgatedata.price_timeseries(symbol,
+                                              start_date=start,
+                                              end_date=end,
+                                              interval='D',
+                                              format='pandas-dataframe')
+
+    norgate_df.drop(['Open', 'High', 'Low', 'Volume', 'Turnover',
+                     'Unadjusted Close', 'Dividend'], axis=1, inplace=True)
+
+    # changing name from Close to whatever the ticker is
+    norgate_df.rename({'Close': index_ticker}, inplace=True, axis=1)
+
+    # return the cumulative pct return over the period we have the data for
+    norgate_df[index_ticker] = np.cumprod(1 + norgate_df[index_ticker].pct_change())
+
+    return norgate_df
