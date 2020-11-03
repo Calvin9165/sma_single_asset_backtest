@@ -24,6 +24,10 @@ securities_df['position'] = 0
 # take a look at everything again this seems strange
 securities_df.loc[securities_df[sma_asset].shift(1) > securities_df['sma'], 'position'] = 1
 
+test = securities_pct[sma_asset] * securities_df['position']
+
+
+
 # the percentage returns that we'll multiply the position by to get the daily returns for the position
 returns = securities_pct
 
